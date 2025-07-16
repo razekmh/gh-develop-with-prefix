@@ -1,35 +1,87 @@
 #!/usr/bin/env bash
 set -e
 
-echo "Hello gh-develop-with-prefix!"
+# GitHub CLI extension to prefix branch names with username when developing from issues
+# Usage: gh develop-with-prefix <issue-number> [other-args]
 
-# Snippets to help get started:
+# Function to display help
+show_help() {
+    cat << EOF
+gh develop-with-prefix - Create a development branch from an issue with username prefix
 
-# Determine if an executable is in the PATH
-# if ! type -p ruby >/dev/null; then
-#   echo "Ruby not found on the system" >&2
-#   exit 1
-# fi
+USAGE:
+    gh develop-with-prefix <issue-number> [flags]
+    gh develop-with-prefix [flags] <issue-number>
 
-# Pass arguments through to another command
-# gh issue list "$@" -R cli/cli
+DESCRIPTION:
+    This extension wraps 'gh issue develop' to automatically prefix the generated
+    branch name with your GitHub username. For example, if your username is 'john'
+    and you create a branch from issue #3 titled "Add new feature", the branch
+    will be named 'john/3-add-new-feature' instead of '3-add-new-feature'.
 
-# Using the gh api command to retrieve and format information
-# QUERY='
-#   query($endCursor: String) {
-#     viewer {
-#       repositories(first: 100, after: $endCursor) {
-#         nodes {
-#           nameWithOwner
-#           stargazerCount
-#         }
-#       }
-#     }
-#   }
-# '
-# TEMPLATE='
-#   {{- range $repo := .data.viewer.repositories.nodes -}}
-#     {{- printf "name: %s - stargazers: %v\n" $repo.nameWithOwner $repo.stargazerCount -}}
-#   {{- end -}}
-# '
-# exec gh api graphql -f query="${QUERY}" --paginate --template="${TEMPLATE}"
+EXAMPLES:
+    gh develop-with-prefix 123
+    gh develop-with-prefix --base main 456
+    gh develop-with-prefix --checkout 789
+
+FLAGS:
+    -h, --help      Show this help message
+    
+    All other flags are passed through to 'gh issue develop'
+
+EOF
+}
+
+# Check for help flag
+for arg in "$@"; do
+    case "$arg" in
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+    esac
+done
+
+# Get the current GitHub username
+USERNAME=$(gh api user --jq '.login' 2>/dev/null)
+if [ -z "$USERNAME" ]; then
+    echo "Error: Could not retrieve GitHub username. Make sure you're authenticated with gh." >&2
+    exit 1
+fi
+
+# Find the issue number from arguments
+ISSUE_NUMBER=""
+FILTERED_ARGS=()
+
+for arg in "$@"; do
+    # Check if argument is a number (issue number)
+    if [[ "$arg" =~ ^[0-9]+$ ]]; then
+        ISSUE_NUMBER="$arg"
+        FILTERED_ARGS+=("$arg")
+    else
+        FILTERED_ARGS+=("$arg")
+    fi
+done
+
+if [ -z "$ISSUE_NUMBER" ]; then
+    echo "Error: No issue number found in arguments." >&2
+    echo "Usage: gh develop-with-prefix <issue-number> [other-flags]" >&2
+    exit 1
+fi
+
+# Get the issue title to construct the branch name
+ISSUE_TITLE=$(gh issue view "$ISSUE_NUMBER" --json title --jq '.title' 2>/dev/null)
+if [ -z "$ISSUE_TITLE" ]; then
+    echo "Error: Could not retrieve issue #$ISSUE_NUMBER. Make sure the issue exists." >&2
+    exit 1
+fi
+
+# Generate the branch name with username prefix
+# Convert title to lowercase, replace spaces and special chars with hyphens
+BRANCH_SUFFIX=$(echo "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$//g')
+PREFIXED_BRANCH="${USERNAME}/${ISSUE_NUMBER}-${BRANCH_SUFFIX}"
+
+echo "Creating branch: $PREFIXED_BRANCH"
+
+# Execute gh issue develop with the prefixed branch name
+exec gh issue develop "$ISSUE_NUMBER" --name "$PREFIXED_BRANCH" "${FILTERED_ARGS[@]:1}"
