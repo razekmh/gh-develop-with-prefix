@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Short alias for gh-develop-with-prefix
+# Simply forwards all arguments to the main extension
+
+exec gh develop-with-prefix "$@"

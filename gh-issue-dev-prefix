@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Alias for gh-develop-with-prefix
+# Usage: gh issue dev-prefix <issue-number> [other-args]
+# Simply forwards all arguments to the main extension
+
+exec gh develop-with-prefix "$@"
