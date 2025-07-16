@@ -99,7 +99,7 @@ fi
 
 # Generate the branch name with prefix
 # Convert title to lowercase, replace spaces and special chars with hyphens
-BRANCH_SUFFIX=$(echo "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$//g')
+BRANCH_SUFFIX=$(echo "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-//g' | sed 's/-$//g')
 PREFIXED_BRANCH="${PREFIX}/${ISSUE_NUMBER}-${BRANCH_SUFFIX}"
 
 echo "Creating branch: $PREFIXED_BRANCH"
