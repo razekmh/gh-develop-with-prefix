@@ -30,7 +30,24 @@ gh develop-with-prefix 123
 
 # Create a branch with additional flags
 gh develop-with-prefix --base main --checkout 456
+
+# Use a custom prefix instead of your GitHub username
+gh develop-with-prefix --prefix sc 123  # Creates: sc/123-issue-title
 ```
+
+### Custom Prefix Option
+
+You can now specify a custom prefix using the `--prefix` flag. This is useful for teams that prefer initials or other short identifiers:
+
+```bash
+# Using initials instead of full username
+gh develop-with-prefix --prefix jd 42  # Creates: jd/42-issue-title
+
+# Using team abbreviations
+gh develop-with-prefix --prefix fe 123  # Creates: fe/123-issue-title (frontend team)
+```
+
+If no `--prefix` is specified, it falls back to your GitHub username.
 
 ### Shorter Aliases
 
@@ -69,25 +86,22 @@ When you run `gh develop-with-prefix 123` on an issue titled "Add new feature":
 ## Examples
 
 ```bash
-# Basic usage (all equivalent)
+# Basic usage with GitHub username (all equivalent)
 gh develop-with-prefix 42
 gh dev-prefix 42
 gh issue dev-prefix 42
 
-# With base branch
-gh develop-with-prefix --base develop 42
-gh dev-prefix --base develop 42
-gh issue dev-prefix --base develop 42
+# Using custom prefix
+gh develop-with-prefix --prefix sc 42  # Creates: sc/42-issue-title
 
-# With checkout flag
-gh develop-with-prefix --checkout 42
-gh dev-prefix --checkout 42
-gh issue dev-prefix --checkout 42
+# With base branch and custom prefix
+gh develop-with-prefix --prefix jd --base develop 42
+
+# With checkout flag and custom prefix
+gh develop-with-prefix --prefix fe --checkout 42
 
 # Get help
 gh develop-with-prefix --help
-gh dev-prefix --help
-gh issue dev-prefix --help
 ```
 
 ## Development
