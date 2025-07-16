@@ -32,6 +32,20 @@ gh develop-with-prefix 123
 gh develop-with-prefix --base main --checkout 456
 ```
 
+### Shorter Aliases
+
+For convenience, this extension also provides shorter aliases:
+
+```bash
+# Short alias
+gh dev-prefix 123
+
+# Even more intuitive (follows gh issue subcommand pattern)
+gh issue dev-prefix 123
+```
+
+All three commands (`gh develop-with-prefix`, `gh dev-prefix`, `gh issue dev-prefix`) work identically.
+
 ## What it does
 
 When you run `gh develop-with-prefix 123` on an issue titled "Add new feature":
@@ -55,17 +69,25 @@ When you run `gh develop-with-prefix 123` on an issue titled "Add new feature":
 ## Examples
 
 ```bash
-# Basic usage
+# Basic usage (all equivalent)
 gh develop-with-prefix 42
+gh dev-prefix 42
+gh issue dev-prefix 42
 
 # With base branch
 gh develop-with-prefix --base develop 42
+gh dev-prefix --base develop 42
+gh issue dev-prefix --base develop 42
 
 # With checkout flag
 gh develop-with-prefix --checkout 42
+gh dev-prefix --checkout 42
+gh issue dev-prefix --checkout 42
 
 # Get help
 gh develop-with-prefix --help
+gh dev-prefix --help
+gh issue dev-prefix --help
 ```
 
 ## Development
