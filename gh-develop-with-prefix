@@ -19,54 +19,75 @@ DESCRIPTION:
     and you create a branch from issue #3 titled "Add new feature", the branch
     will be named 'john/3-add-new-feature' instead of '3-add-new-feature'.
 
+    You can also specify a custom prefix using the --prefix flag.
+
 EXAMPLES:
     gh develop-with-prefix 123
     gh develop-with-prefix --base main 456
     gh develop-with-prefix --checkout 789
+    gh develop-with-prefix --prefix sc 123  # Creates: sc/123-issue-title
 
 FLAGS:
-    -h, --help      Show this help message
+    -h, --help              Show this help message
+    --prefix <prefix>       Use custom prefix instead of GitHub username
     
     All other flags are passed through to 'gh issue develop'
 
 EOF
 }
 
-# Check for help flag
-for arg in "$@"; do
-    case "$arg" in
+# Initialize variables
+CUSTOM_PREFIX=""
+ISSUE_NUMBER=""
+FILTERED_ARGS=()
+
+# Parse arguments
+while [ $# -gt 0 ]; do
+    case "$1" in
         -h|--help)
             show_help
             exit 0
             ;;
+        --prefix)
+            if [ -z "$2" ] || [[ "$2" == -* ]]; then
+                echo "Error: --prefix requires a value" >&2
+                exit 1
+            fi
+            CUSTOM_PREFIX="$2"
+            shift 2
+            ;;
+        *)
+            # Check if argument is a number (issue number)
+            if [[ "$1" =~ ^[0-9]+$ ]]; then
+                ISSUE_NUMBER="$1"
+                FILTERED_ARGS+=("$1")
+            else
+                FILTERED_ARGS+=("$1")
+            fi
+            shift
+            ;;
     esac
-done
-
-# Get the current GitHub username
-USERNAME=$(gh api user --jq '.login' 2>/dev/null)
-if [ -z "$USERNAME" ]; then
-    echo "Error: Could not retrieve GitHub username. Make sure you're authenticated with gh." >&2
-    exit 1
-fi
-
-# Find the issue number from arguments
-ISSUE_NUMBER=""
-FILTERED_ARGS=()
-
-for arg in "$@"; do
-    # Check if argument is a number (issue number)
-    if [[ "$arg" =~ ^[0-9]+$ ]]; then
-        ISSUE_NUMBER="$arg"
-        FILTERED_ARGS+=("$arg")
-    else
-        FILTERED_ARGS+=("$arg")
-    fi
 done
 
 if [ -z "$ISSUE_NUMBER" ]; then
     echo "Error: No issue number found in arguments." >&2
     echo "Usage: gh develop-with-prefix <issue-number> [other-flags]" >&2
     exit 1
+fi
+
+# Determine the prefix to use
+if [ -n "$CUSTOM_PREFIX" ]; then
+    PREFIX="$CUSTOM_PREFIX"
+    echo "Using custom prefix: $PREFIX"
+else
+    # Get the current GitHub username as fallback
+    USERNAME=$(gh api user --jq '.login' 2>/dev/null)
+    if [ -z "$USERNAME" ]; then
+        echo "Error: Could not retrieve GitHub username. Make sure you're authenticated with gh." >&2
+        exit 1
+    fi
+    PREFIX="$USERNAME"
+    echo "Using GitHub username as prefix: $PREFIX"
 fi
 
 # Get the issue title to construct the branch name
@@ -76,12 +97,20 @@ if [ -z "$ISSUE_TITLE" ]; then
     exit 1
 fi
 
-# Generate the branch name with username prefix
+# Generate the branch name with prefix
 # Convert title to lowercase, replace spaces and special chars with hyphens
 BRANCH_SUFFIX=$(echo "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$//g')
-PREFIXED_BRANCH="${USERNAME}/${ISSUE_NUMBER}-${BRANCH_SUFFIX}"
+PREFIXED_BRANCH="${PREFIX}/${ISSUE_NUMBER}-${BRANCH_SUFFIX}"
 
 echo "Creating branch: $PREFIXED_BRANCH"
 
 # Execute gh issue develop with the prefixed branch name
-exec gh issue develop "$ISSUE_NUMBER" --name "$PREFIXED_BRANCH" "${FILTERED_ARGS[@]:1}"
+# Remove the issue number from filtered args since we handle it separately
+FINAL_ARGS=()
+for arg in "${FILTERED_ARGS[@]}"; do
+    if [[ ! "$arg" =~ ^[0-9]+$ ]]; then
+        FINAL_ARGS+=("$arg")
+    fi
+done
+
+exec gh issue develop "$ISSUE_NUMBER" --name "$PREFIXED_BRANCH" "${FINAL_ARGS[@]}"
