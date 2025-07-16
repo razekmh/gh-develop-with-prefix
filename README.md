@@ -4,16 +4,20 @@ A GitHub CLI extension that automatically prefixes branch names with your GitHub
 
 ## Installation
 
-### Install from source
+### Install from GitHub
 
 ```bash
-gh extension install /path/to/gh-develop-with-prefix
+gh extension install razekmh/gh-develop-with-prefix
 ```
 
-### Install from GitHub (after publishing)
+### Install from source
+
+If you want to install from a local copy:
 
 ```bash
-gh extension install yourusername/gh-develop-with-prefix
+git clone https://github.com/razekmh/gh-develop-with-prefix.git
+cd gh-develop-with-prefix
+gh extension install .
 ```
 
 ## Usage
@@ -33,7 +37,7 @@ gh develop-with-prefix --base main --checkout 456
 When you run `gh develop-with-prefix 123` on an issue titled "Add new feature":
 
 - **Standard gh issue develop**: Creates branch `123-add-new-feature`
-- **With this extension**: Creates branch `yourusername/123-add-new-feature`
+- **With this extension**: Creates branch `razekmh/123-add-new-feature`
 
 ## Requirements
 
@@ -76,10 +80,19 @@ The extension is a bash script that wraps the `gh issue develop` command. It:
 
 ## Contributing
 
-1. Fork the repository
-2. Make your changes
-3. Test the extension locally
-4. Submit a pull request
+1. Fork the repository: https://github.com/razekmh/gh-develop-with-prefix
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Make your changes
+4. Test the extension locally: `gh extension install .`
+5. Commit your changes: `git commit -am 'Add some feature'`
+6. Push to the branch: `git push origin feature/your-feature`
+7. Submit a pull request
+
+## Repository
+
+This extension is available on GitHub: https://github.com/razekmh/gh-develop-with-prefix
+
+Browse the code, report issues, or contribute improvements!
 
 ## License
 
