@@ -56,12 +56,10 @@ For convenience, this extension also provides shorter aliases:
 ```bash
 # Short alias
 gh dev-prefix 123
-
-# Even more intuitive (follows gh issue subcommand pattern)
-gh issue dev-prefix 123
+gh issue-dev-prefix 123
 ```
 
-All three commands (`gh develop-with-prefix`, `gh dev-prefix`, `gh issue dev-prefix`) work identically.
+All three commands (`gh develop-with-prefix`, `gh dev-prefix`, `gh issue-dev-prefix`) work identically.
 
 ## What it does
 
