@@ -113,4 +113,4 @@ for arg in "${FILTERED_ARGS[@]}"; do
     fi
 done
 
-exec gh issue develop "$ISSUE_NUMBER" --name "$PREFIXED_BRANCH" "${FINAL_ARGS[@]}"
+exec gh issue develop "$ISSUE_NUMBER" --name "$PREFIXED_BRANCH" --checkout "${FINAL_ARGS[@]}"
